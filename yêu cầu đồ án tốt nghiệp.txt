@@ -1,0 +1,5 @@
+loại hành lí
+thuật toán bán vé theo lễ, theo ngày mua,
+thanh toán momo, thanh toán thẻ ngân hàng
+gửi mail thông báo
+hủy vé
