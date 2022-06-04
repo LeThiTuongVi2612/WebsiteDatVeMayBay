@@ -17,7 +17,7 @@
                         <p><span>@thongtin.NgayDi.ToString("dd/MM/yyyy")</span>  |  <span>@ViewBag.SoLuong hành khách</span>  |  <span>@thongtin.HangGhe</span></p>
                     </div>
                 </div>
-                <div class="container-package">
+                @*<div class="container-package">
                     <div class="booking-package">
 
                         <i class="fas fa-couch"></i>
@@ -34,19 +34,19 @@
                         </div>
                         <div class="combobox" id="cbbHanhLi">
                             <div class="item sheet">
-                                Xách tay
+                                Xách tay (>= 5kg)
                             </div>
                             <div class="item sheet">
-                                Hành lí 10kg
+                                Hành lí >= 10kg
                             </div>
                             <div class="item sheet">
-                                Hành lí 12kg
+                                Hành lí >= 12kg
                             </div><div class="item sheet">
-                                Hành lí 18kg
+                                Hành lí >= 18kg
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>*@
                 <div class="title">
                     <span>Thông tin liên hệ</span>
                 </div>
@@ -202,11 +202,12 @@
                             </div>
                         }
                     }
+
                     <div class="row">
                         <span>Hành lí</span>
-
-                        <span>@ViewBag.TongTamTinh.ToString("N0") VND</span>
+                        <span>@ViewBag.HanhLi.ToString("N0") VND</span>
                     </div>
+
                     <div class="row">
                         <span>Tổng tạm tính</span>
                         <span>@ViewBag.TongTamTinh.ToString("N0") VND</span>
@@ -229,7 +230,7 @@
 }
 
 <style>
-    .container-package {
+    /*.container-package {
         background: #fff;
         margin-top: 30px;
         position: relative;
@@ -248,7 +249,7 @@
         display: flex;
         width: 100%;
         align-items: center;
-    }
+    }*/
 
     /*.combobox-package {
         display: none;
@@ -264,7 +265,7 @@
         overflow-y: scroll;
          box-shadow: 0 2px 4px -1px rgb(0 0 0 / 20%), 0 4px 5px 0 rgb(0 0 0 / 14%), 0 1px 10px 0 rgb(0 0 0 / 12%); 
     }*/
-    #cbbHanhLi {
+    /*#cbbHanhLi {
         overflow-y: hidden;
         margin-top: 90px;
         border-radius: 5px;
@@ -273,17 +274,19 @@
     .combobox{
         top:1%;
         width: 100%;
-    }
+    }*/
 </style>
 
 @section scripts{
     <script>
         $("#frmLoaiHanhLi").click(function () {
-            $("#cbbHanhLi").toggleClass("active");
+            /*alert("Thanh cong")*/
+            document.getElementById("cbbHanhLi").style.display = "block"
+            $("#cbbHanhLi").addClass("active");
         })
 
         $('.sheet').click(function () {
-            $("#cbbHanhLi").removeClass("active");
+            document.getElementById("cbbHanhLi").style.display = "none"
             $('#LoaiHanhLi').html($(this).html())
         })
 

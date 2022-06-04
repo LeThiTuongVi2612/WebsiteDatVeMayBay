@@ -1,5 +1,5 @@
-loại hành lí
+loại hành lí -> done
 thuật toán bán vé theo lễ, theo ngày mua,
-thanh toán momo, thanh toán thẻ ngân hàng
-gửi mail thông báo
+thanh toán momo ->done, thanh toán thẻ ngân hàng
+gửi mail thông báo->done
 hủy vé

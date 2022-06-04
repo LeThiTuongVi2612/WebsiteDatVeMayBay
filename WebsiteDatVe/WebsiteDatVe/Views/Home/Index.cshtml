@@ -16,7 +16,7 @@
                     <input type="radio" name="type" id="rdMotChieu" value="1" checked />
                     <label for="rdMotChieu">Một chiều</label>
                 </label>
-                <label class="radio">
+                <label class="radio" style="display: none">
                     <input type="radio" name="type" id="rdHaiChieu" value="2" />
                     <label for="rdHaiChieu">Khứ hồi</label>
                 </label>
@@ -146,7 +146,30 @@
                     </div>
                 </div>
 
-                
+                <div class="container">
+                    <i class="fas fa-couch"></i>
+                    <div class="form-group" id="frmLoaiHanhLi">
+                        <div class="passengers">
+                            <p class="title">Hành lí</p>
+                            <p id="LoaiHanhLi">Xách tay</p>
+                        </div>
+                        <div class="passengers">
+                            <div class="arrow">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="combobox" id="cbbHanhLi">
+                        <div class="item sheets">
+                            Xách tay
+                        </div>
+                        <div class="item sheets">
+                            Kí gửi
+                        </div>
+                    </div>
+                </div>
+
+
 
                 <div class="btn-container">
                     <button class="btn-primary" id="btnFind">TÌM CHUYẾN BAY</button>
@@ -155,7 +178,7 @@
         </div>
     </div>
 </div>
-<div class="popular">
+<div class="popular" style="margin-top: 24rem">
     <h2>ĐIỂM ĐẾN PHỔ BIẾN</h2>
     <div class="box-container">
         <div class="box-item">
@@ -190,6 +213,12 @@
 </div>
  
     <script>
+
+        $('.sheets').click(function () {
+            $("#cbbHanhLi").removeClass("active");
+            $('#LoaiHanhLi').html($(this).html())
+        })
+
         $(document).ready(function () {
             getDiaDiem();
 
@@ -280,9 +309,9 @@
         //Tìm chuyến bay
         $('#btnFind').click(function () {
             if (ngayve == null) {
-                window.location = '/Home/Search/?diemdi=' + $('#cbbDiemDi').val() + '&diemden=' + $('#cbbDiemDen').val() + '&nguoilon=' + nguoilon + '&treem=' + treem + '&embe=' + embe + '&ngaydi=' + $('#timeCheckIn').val() + '&hangghe=' + $('#LoaiGhe').html();
+                window.location = '/Home/Search/?diemdi=' + $('#cbbDiemDi').val() + '&diemden=' + $('#cbbDiemDen').val() + '&nguoilon=' + nguoilon + '&treem=' + treem + '&embe=' + embe + '&ngaydi=' + $('#timeCheckIn').val() + '&hangghe=' + $('#LoaiGhe').html() + '&hanhli=' + $('#LoaiHanhLi').html();
             } else {
-                window.location = '/Home/Search2Way/?diemdi=' + $('#cbbDiemDi').val() + '&diemden=' + $('#cbbDiemDen').val() + '&nguoilon=' + nguoilon + '&treem=' + treem + '&embe=' + embe + '&ngaydi=' + $('#timeCheckIn').val() + '&ngayve=' + ngayve + '&hangghe=' + $('#LoaiGhe').html();
+                window.location = '/Home/Search2Way/?diemdi=' + $('#cbbDiemDi').val() + '&diemden=' + $('#cbbDiemDen').val() + '&nguoilon=' + nguoilon + '&treem=' + treem + '&embe=' + embe + '&ngaydi=' + $('#timeCheckIn').val() + '&ngayve=' + ngayve + '&hangghe=' + $('#LoaiGhe').html() + '&hanhli=' + $('#LoaiHanhLi').html();
             }
             
         })

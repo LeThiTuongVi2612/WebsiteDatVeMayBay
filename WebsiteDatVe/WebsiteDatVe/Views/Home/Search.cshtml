@@ -36,41 +36,6 @@
 
     }
     <div class="ticket-container-search">
-        @*<div class="banner">
-            <div class="search">
-                <div class="box">
-                    <div class="detail">
-                        <div class="container">
-                            <i class="fas fa-couch"></i>
-                            <div class="form-group" id="frmLoaiHanhLi">
-                                <div class="passengers">
-                                    <p class="title">Hành lí</p>
-                                    <p id="LoaiGhe">Xách tay</p>
-                                </div>
-                                <div class="passengers">
-                                    <div class="arrow">
-                                        <i class="fas fa-chevron-down"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="combobox" id="cbbHanhLi">
-                                <div class="item sheet">
-                                    Xách tay
-                                </div>
-                                <div class="item sheet">
-                                    Hành lí 10kg
-                                </div>
-                                <div class="item sheet">
-                                    Hành lí 12kg
-                                </div><div class="item sheet">
-                                    Hành lí 18kg
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>*@
         @foreach (var item in Model)
         {
             <div class="ticket">
@@ -109,8 +74,14 @@
 
 </div>
 
+
+
 @section scripts{
     <script>
+
+        
+        
+
         $("button[name='btnChonVe']").click(function () {
             if ($('#session').val() == 0) {
                 $('.sign-in').addClass('show')

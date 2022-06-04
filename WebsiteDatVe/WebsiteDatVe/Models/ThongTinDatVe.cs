@@ -16,5 +16,7 @@ namespace WebsiteDatVe.Models
         public DateTime NgayVe { get; set; }
         public string HangGhe { get; set; }
 
+        public string HanhLi { get; set; }
+
     }
 }

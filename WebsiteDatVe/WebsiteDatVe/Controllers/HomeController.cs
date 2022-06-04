@@ -16,7 +16,7 @@ namespace WebsiteDatVe.Controllers
             return View();
         }
 
-        public List<ChuyenBay> TimKiem(long diemdi, long diemden, int nguoilon, int treem, DateTime ngaydi, string hangghe)
+        public List<ChuyenBay> TimKiem(long diemdi, long diemden, int nguoilon, int treem, DateTime ngaydi, string hangghe, string hanhli)
         {
             //Tìm chuyến bay có ngày phù hợp
             List<ChuyenBay> flights = (from c
@@ -47,6 +47,13 @@ namespace WebsiteDatVe.Controllers
                     socho = (int)item.MayBay.SoGheHangNhat;
                 }
 
+                //lấy ra số hành lí ban đầu
+                int sohanhli = (int)item.MayBay.HanhLiXachTay;
+                if(hanhli == "Kí gửi ( >= 18kg )")
+                {
+                    sohanhli = (int)item.MayBay.HanhLiKiGui;
+                }
+
                 //Lấy ra số vé đã được đặt của hạng ghế đang tìm
                 int slve = (from v in db.Ves where v.MaChuyenBay == item.MaChuyenBay && v.HangVe == hangghe && v.TinhTrang != "Canceled" select v).Count();
 
@@ -61,7 +68,7 @@ namespace WebsiteDatVe.Controllers
             return chuyenbays;
         }
 
-        public ActionResult Search(long diemdi, long diemden, int nguoilon, int treem, int embe, DateTime ngaydi, string hangghe)
+        public ActionResult Search(long diemdi, long diemden, int nguoilon, int treem, int embe, DateTime ngaydi, string hangghe, string hanhli)
         {
             ViewBag.DiemDi = db.SanBays.Where(x => x.MaSanBay.Equals(diemdi)).Select(x => x.TenSanBay).SingleOrDefault();
             ViewBag.DiemDen = db.SanBays.Where(x => x.MaSanBay.Equals(diemden)).Select(x => x.TenSanBay).SingleOrDefault();
@@ -75,9 +82,10 @@ namespace WebsiteDatVe.Controllers
             thongTinDatVe.EmBe = embe;
             thongTinDatVe.NgayDi = ngaydi;
             thongTinDatVe.HangGhe = hangghe;
+            thongTinDatVe.HanhLi = hanhli;
             Session["ThongTinDatVe"] = thongTinDatVe;
 
-            List<ChuyenBay> chuyenbays = TimKiem(diemdi, diemden, nguoilon, treem, ngaydi, hangghe);
+            List<ChuyenBay> chuyenbays = TimKiem(diemdi, diemden, nguoilon, treem, ngaydi, hangghe, hanhli);
 
 
             return View(chuyenbays);
@@ -85,7 +93,7 @@ namespace WebsiteDatVe.Controllers
 
         
 
-        public ActionResult Search2Way(long diemdi, long diemden, int nguoilon, int treem, int embe, DateTime ngaydi, DateTime ngayve, string hangghe)
+        public ActionResult Search2Way(long diemdi, long diemden, int nguoilon, int treem, int embe, DateTime ngaydi, DateTime ngayve, string hangghe, string hanhli)
         {
             ViewBag.DiemDi = db.SanBays.Where(x => x.MaSanBay.Equals(diemdi)).Select(x => x.TenSanBay).SingleOrDefault();
             ViewBag.DiemDen = db.SanBays.Where(x => x.MaSanBay.Equals(diemden)).Select(x => x.TenSanBay).SingleOrDefault();
@@ -100,6 +108,7 @@ namespace WebsiteDatVe.Controllers
             thongTinDatVe.NgayDi = ngaydi;
             thongTinDatVe.NgayVe = ngayve;
             thongTinDatVe.HangGhe = hangghe;
+            thongTinDatVe.HanhLi = hanhli;
             Session["ThongTinDatVe"] = thongTinDatVe;
 
             return View();
@@ -112,7 +121,7 @@ namespace WebsiteDatVe.Controllers
                 ThongTinDatVe thongtindatve = (ThongTinDatVe)Session["ThongTinDatVe"];
 
                 //lấy list chuyến bay đi
-                List<ChuyenBay> lstdi = TimKiem(thongtindatve.DiemDi, thongtindatve.DiemDen, thongtindatve.NguoiLon, thongtindatve.TreEm, thongtindatve.NgayDi, thongtindatve.HangGhe);
+                List<ChuyenBay> lstdi = TimKiem(thongtindatve.DiemDi, thongtindatve.DiemDen, thongtindatve.NguoiLon, thongtindatve.TreEm, thongtindatve.NgayDi, thongtindatve.HangGhe, thongtindatve.HanhLi);
 
                 var diemdi = db.SanBays.Where(x => x.MaSanBay.Equals(thongtindatve.DiemDi)).Select(x => x.TenSanBay).SingleOrDefault();
                 var diemden = db.SanBays.Where(x => x.MaSanBay.Equals(thongtindatve.DiemDen)).Select(x => x.TenSanBay).SingleOrDefault();
@@ -131,7 +140,7 @@ namespace WebsiteDatVe.Controllers
                             }).ToList();
 
                 //Lấy list chuyến bay về
-                List<ChuyenBay> lstve = TimKiem(thongtindatve.DiemDen, thongtindatve.DiemDi, thongtindatve.NguoiLon, thongtindatve.TreEm, thongtindatve.NgayVe, thongtindatve.HangGhe);
+                List<ChuyenBay> lstve = TimKiem(thongtindatve.DiemDen, thongtindatve.DiemDi, thongtindatve.NguoiLon, thongtindatve.TreEm, thongtindatve.NgayVe, thongtindatve.HangGhe, thongtindatve.HanhLi);
                 var lst2 = (from v in lstve
                             select new
                             {

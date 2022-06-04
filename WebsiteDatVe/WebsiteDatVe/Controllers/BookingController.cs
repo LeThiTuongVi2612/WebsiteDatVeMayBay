@@ -3,7 +3,9 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -21,7 +23,7 @@ namespace WebsiteDatVe.Controllers
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public ActionResult Checkout(long id, double giave, long? idKhuHoi, double giaveKhuHoi)
         {
-            ThongTinDatVe thongtin = (ThongTinDatVe) Session["ThongTinDatVe"];
+            ThongTinDatVe thongtin = (ThongTinDatVe)Session["ThongTinDatVe"];
             ViewBag.DiemDi = db.SanBays.Where(x => x.MaSanBay.Equals(thongtin.DiemDi)).Select(x => x.TenSanBay).SingleOrDefault();
             ViewBag.DiemDen = db.SanBays.Where(x => x.MaSanBay.Equals(thongtin.DiemDen)).Select(x => x.TenSanBay).SingleOrDefault();
             ViewBag.SoLuong = thongtin.NguoiLon + thongtin.TreEm + thongtin.EmBe;
@@ -30,7 +32,7 @@ namespace WebsiteDatVe.Controllers
             double giaHangVe = 1;
             double giavetong = giave + giaveKhuHoi;
 
-            if(thongtin.HangGhe.Trim() == "Phổ thông")
+            if (thongtin.HangGhe.Trim() == "Phổ thông")
             {
                 giaHangVe = giavetong;
             }
@@ -38,19 +40,36 @@ namespace WebsiteDatVe.Controllers
             {
                 giaHangVe = giavetong * 1.2;
             }
-            else if(thongtin.HangGhe.Trim() == "Thương gia")
+            else if (thongtin.HangGhe.Trim() == "Thương gia")
             {
                 giaHangVe = giavetong * 1.4;
             }
-            else if(thongtin.HangGhe.Trim() == "Hạng nhất")
+            else if (thongtin.HangGhe.Trim() == "Hạng nhất")
             {
                 giaHangVe = giavetong * 1.8;
             }
 
+
             ViewBag.GiaVeNguoiLon = (giaHangVe * thongtin.NguoiLon);
-            ViewBag.GiaVeTreEm = giaHangVe*0.75 * thongtin.TreEm;
+            ViewBag.GiaVeTreEm = giaHangVe * 0.75 * thongtin.TreEm;
             ViewBag.GiaVeEmBe = 110000 * thongtin.EmBe;
-            double tongtam = giaHangVe * thongtin.NguoiLon + giaHangVe*0.75 * thongtin.TreEm + 110000 * thongtin.EmBe;
+
+            double tongtam = 0;
+
+            double giaHanhLi = 1;
+            double giaTongHanhLi = giave + giaveKhuHoi;
+            if (thongtin.HanhLi.Trim() == "Xách tay")
+            {
+                giaHanhLi = 0;
+                ViewBag.HanhLi = 0;
+            }
+            else
+            {
+                giaHanhLi = 300000;
+                ViewBag.HanhLi = giaHanhLi;
+            }
+
+            tongtam = giaHangVe * thongtin.NguoiLon + giaHangVe * 0.75 * thongtin.TreEm + 110000 * thongtin.EmBe + giaHanhLi;
             ViewBag.TongTamTinh = tongtam;
             double thue = (double)(tongtam * 0.1);
             ViewBag.Thue = thue;
@@ -60,7 +79,16 @@ namespace WebsiteDatVe.Controllers
             ViewBag.MaChuyenBay2 = idKhuHoi;
 
             Session["TongTien1"] = TinhGiaVe(giave);
-            Session["TongTien2"] = TinhGiaVe(giaveKhuHoi);
+
+            //if (giaveKhuHoi == 0)
+            //{
+            //    Session["TongTien2"] = 0;
+            //}
+            //else
+            //{
+                Session["TongTien2"] = TinhGiaVe(giaveKhuHoi);
+
+            
 
             return View();
         }
@@ -85,77 +113,91 @@ namespace WebsiteDatVe.Controllers
             {
                 giaHangVe = gia * 1.8;
             }
-            double tongtien = giaHangVe * thongtin.NguoiLon + giaHangVe * 0.75 * thongtin.TreEm + 110000 * thongtin.EmBe;
+
+            double giaHanhLi = 1;
+
+            if (thongtin.HanhLi.Trim() == "Xách tay")
+            {
+                giaHanhLi = 0;
+
+            }
+            else
+            {
+                giaHanhLi = 300000;
+
+            }
+            double tongtien = giaHangVe * thongtin.NguoiLon + giaHangVe * 0.75 * thongtin.TreEm + 110000 * thongtin.EmBe + giaHanhLi;
             return tongtien + tongtien * 0.1;
         }
 
         public Ve CreateTicket(string arr, long? machuyenbay, double tongtien, string nguoidat)
         {
-                var listCus = new JavaScriptSerializer().Deserialize<List<KhachHang>>(arr);
-                var obj = new JavaScriptSerializer().Deserialize<NguoiDatVe>(nguoidat);
+            var listCus = new JavaScriptSerializer().Deserialize<List<KhachHang>>(arr);
+            var obj = new JavaScriptSerializer().Deserialize<NguoiDatVe>(nguoidat);
 
-                TaiKhoan taikhoan = (TaiKhoan)Session["TaiKhoan"];
-                ThongTinDatVe thongtin = (ThongTinDatVe)Session["ThongTinDatVe"];
+            TaiKhoan taikhoan = (TaiKhoan)Session["TaiKhoan"];
+            ThongTinDatVe thongtin = (ThongTinDatVe)Session["ThongTinDatVe"];
 
 
 
-                //Đặt vé
-                Ve ve = new Ve();
-                ve.MaVe = taikhoan.MaTaiKhoan + DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss");
-                ve.MaChuyenBay = machuyenbay;
-                ve.HangVe = thongtin.HangGhe;
-                ve.SoLuongGhe = thongtin.NguoiLon + thongtin.TreEm;
-                ve.MaTaiKhoan = taikhoan.MaTaiKhoan;
-                ve.TinhTrang = "Processing";
-                ve.NgayDat = DateTime.Now;
-                ve.TongTien = tongtien;
-                db.Ves.Add(ve);
+            //Đặt vé
+            Ve ve = new Ve();
+            ve.MaVe = taikhoan.MaTaiKhoan + DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss");
+            ve.MaChuyenBay = machuyenbay;
+            ve.HangVe = thongtin.HangGhe;
+            ve.SoLuongGhe = thongtin.NguoiLon + thongtin.TreEm;
+            ve.MaTaiKhoan = taikhoan.MaTaiKhoan;
+            ve.TinhTrang = "Processing";
+            ve.NgayDat = DateTime.Now;
+            ve.TongTien = tongtien;
+            db.Ves.Add(ve);
+            db.SaveChanges();
+
+            //Tạo sesion 
+            //Session["TongTien"] = tongtien;
+            //Session["MaVe"] = ve.MaVe;
+
+            //Thêm khách hàng
+            foreach (var item in listCus)
+            {
+                KhachHang khachhang = new KhachHang();
+                khachhang.Ho = item.Ho;
+                khachhang.Ten = item.Ten;
+                khachhang.SDT = item.SDT;
+                khachhang.NgaySinh = item.NgaySinh;
+                khachhang.CMND = item.CMND;
+                khachhang.QuocTich = item.QuocTich;
+                khachhang.MaVe = ve.MaVe;
+                khachhang.LoaiKhachHang = item.LoaiKhachHang;
+                db.KhachHangs.Add(khachhang);
                 db.SaveChanges();
+            }
 
-                //Tạo sesion 
-                //Session["TongTien"] = tongtien;
-                //Session["MaVe"] = ve.MaVe;
-
-                //Thêm khách hàng
-                foreach (var item in listCus)
-                {
-                    KhachHang khachhang = new KhachHang();
-                    khachhang.Ho = item.Ho;
-                    khachhang.Ten = item.Ten;
-                    khachhang.SDT = item.SDT;
-                    khachhang.NgaySinh = item.NgaySinh;
-                    khachhang.CMND = item.CMND;
-                    khachhang.QuocTich = item.QuocTich;
-                    khachhang.MaVe = ve.MaVe;
-                    khachhang.LoaiKhachHang = item.LoaiKhachHang;
-                    db.KhachHangs.Add(khachhang);
-                    db.SaveChanges();
-                }
-
-                //Thêm người đặt
-                NguoiDatVe nguoiDatVe = new NguoiDatVe();
-                nguoiDatVe.Ho = obj.Ho;
-                nguoiDatVe.Ten = obj.Ten;
-                nguoiDatVe.SDT = obj.SDT;
-                nguoiDatVe.Email = obj.Email;
-                nguoiDatVe.MaVe = ve.MaVe;
-                db.NguoiDatVes.Add(nguoiDatVe);
-                db.SaveChanges();
+            //Thêm người đặt
+            NguoiDatVe nguoiDatVe = new NguoiDatVe();
+            nguoiDatVe.Ho = obj.Ho;
+            nguoiDatVe.Ten = obj.Ten;
+            nguoiDatVe.SDT = obj.SDT;
+            nguoiDatVe.Email = obj.Email;
+            nguoiDatVe.MaVe = ve.MaVe;
+            db.NguoiDatVes.Add(nguoiDatVe);
+            db.SaveChanges();
 
 
-                return ve;
+            return ve;
         }
 
         public JsonResult TaoVe(string arr, long machuyenbay1, long? machuyenbay2, string nguoidat)
         {
-            try {
-                double tongtien1 = (double) Session["TongTien1"];
+            try
+            {
+                double tongtien1 = (double)Session["TongTien1"];
                 double tongtien2 = (double)Session["TongTien2"];
 
                 Ve ve1 = CreateTicket(arr, machuyenbay1, tongtien1, nguoidat);
                 Session["MaVe1"] = ve1.MaVe;
 
-                if(machuyenbay2 != null)
+                if (machuyenbay2 != null)
                 {
                     Ve ve2 = CreateTicket(arr, machuyenbay2, tongtien1, nguoidat);
                     Session["MaVe2"] = ve2.MaVe;
@@ -175,26 +217,27 @@ namespace WebsiteDatVe.Controllers
 
             //Sân bay
             ViewBag.DiemDi = db.SanBays.Where(x => x.MaSanBay == ve.ChuyenBay.DiemDi).Select(x => x.TenSanBay).SingleOrDefault();
-            ViewBag.DiemDen = db.SanBays.Where(x => x.MaSanBay == ve.ChuyenBay.DiemDen ).Select(x => x.TenSanBay).SingleOrDefault();
+            ViewBag.DiemDen = db.SanBays.Where(x => x.MaSanBay == ve.ChuyenBay.DiemDen).Select(x => x.TenSanBay).SingleOrDefault();
 
             return View(ve);
         }
 
-        
+            
+
         public async Task<ActionResult> ThanhToanMomo()
         {
             double tongtien = (double)Session["TongTien1"] + (double)Session["TongTien2"];
 
-            string partnerCode = "MOMODDI520210624";
-            string accessKey = "xc5ROj205YDvqrBn";
-            string serectkey = "sSFqWXSq4QXW9MSr5SDAaGNBjL7FCrIk";
+            string serectkey = "sFcbSGRSJjwGxwhhcEktCHWYUuTuPNDB";
+            string partnerCode = "MOMOOJOI20210710";
+            string accessKey = "iPXneGmrJH0G8FOP";
             string orderId = Guid.NewGuid().ToString();
             string requestId = Guid.NewGuid().ToString();
             string extraData = "";
             string orderInfo = "THANH TOÁN VÉ MÁY BAY";
-            string amount = tongtien+"";
-            string redirectUrl = "http://localhost:55480/Booking/returnUrl";
-            string ipnUrl = "http://localhost:55480/Booking/notifyurl";
+            string amount = tongtien + "";
+            string redirectUrl = "https://localhost:44309/Booking/returnUrl";
+            string ipnUrl = "https://localhost:44309/Booking/notifyurl";
             string requestType = "captureWallet";
             //Before sign HMAC SHA256 signature
             string rawHash = "accessKey=" + accessKey +
@@ -243,17 +286,18 @@ namespace WebsiteDatVe.Controllers
             return Redirect(jmessage.GetValue("payUrl").ToString());
         }
 
-        public ActionResult returnUrl()
+        public ActionResult  returnUrl()
         {
             string param = Request.QueryString.ToString().Substring(0, Request.QueryString.ToString().IndexOf("signature") - 1);
 
             //Thành công
 
             string mave1 = Session["MaVe1"].ToString();
-            
+
             if (Request.QueryString["message"].Equals("Successful."))
             {
                 ViewBag.Message = "Đặt vé thành công! Vui lòng vào lịch sử đặt vé để kiểm tra";
+               
                 //Thay đổi trạng thái vé
                 Ve ve1 = (from v in db.Ves where v.MaVe == mave1 select v).FirstOrDefault();
                 ve1.TinhTrang = "Paid";
@@ -282,27 +326,31 @@ namespace WebsiteDatVe.Controllers
                     db.SaveChanges();
                 }
                 return View();
-                
+
             }
             return View();
         }
+
         public JsonResult notifyurl()
         {
             return Json(new { code = 200 }, JsonRequestBehavior.AllowGet);
         }
-        
+
         public JsonResult getKhachHang(string mave)
         {
             try
             {
-                var lstKhachHang = (from k in db.KhachHangs where k.MaVe == mave select new { 
-                    HoTen = k.Ho + k.Ten,
-                    LoaiKhachHang = k.LoaiKhachHang
-                }).ToList();
+                var lstKhachHang = (from k in db.KhachHangs
+                                    where k.MaVe == mave
+                                    select new
+                                    {
+                                        HoTen = k.Ho + k.Ten,
+                                        LoaiKhachHang = k.LoaiKhachHang
+                                    }).ToList();
 
                 return Json(new { code = 200, lst = lstKhachHang }, JsonRequestBehavior.AllowGet);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return Json(new { code = 500 }, JsonRequestBehavior.AllowGet);
             }
@@ -316,13 +364,13 @@ namespace WebsiteDatVe.Controllers
                 ve.TinhTrang = "request";
                 db.SaveChanges();
 
-                return Json(new { code = 200}, JsonRequestBehavior.AllowGet);
+                return Json(new { code = 200 }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception e)
             {
                 return Json(new { code = 500 }, JsonRequestBehavior.AllowGet);
             }
         }
-        
+
     }
 }

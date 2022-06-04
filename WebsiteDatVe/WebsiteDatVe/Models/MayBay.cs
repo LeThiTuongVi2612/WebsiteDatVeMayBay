@@ -27,6 +27,10 @@ namespace WebsiteDatVe.Models
 
         public int? SoGheHangNhat { get; set; }
 
+        public int? HanhLiXachTay { get; set; }
+
+        public int? HanhLiKiGui { get; set; }
+
         public long? MahangBay { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
