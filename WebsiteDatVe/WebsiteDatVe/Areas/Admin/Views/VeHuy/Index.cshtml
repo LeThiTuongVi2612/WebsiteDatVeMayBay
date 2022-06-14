@@ -33,7 +33,8 @@
                             <th>Hạng vé</th>
                             <th>Số lượng ghế</th>
                             <th>Tên khách hàng</th>
-                            <th>Ngày đặt</th>
+                            <th>Ngày hủy vé</th>
+                            <th>Ngày bay</th>
                             <th>Tổng tiền</th>
                             <th>Action</th>
                         </tr>
@@ -59,7 +60,7 @@
                     <p class="text-info"><small id="contentInfo"></small></p>
                 </div>
                 <div class="modal-footer">
-                    <div type="submit" id="confirmOk" class="btn btn-info">Oke</div>
+                    <div type="submit" id="confirmOk" class="btn btn-info">Ok</div>
                 </div>
             </form>
         </div>
@@ -87,14 +88,22 @@
                         html += '<td>' + item.HangVe + '</td>';
                         html += '<td>' + item.SoLuongGhe + '</td>';
                         html += '<td>' + item.TenKhachHang + '</td>';
-                        html += '<td>' + item.NgayDat + '</td>';
+
+                        html += '<td>' + item.ThoiGianHuyVe + '</td>';
+                        html += '<td>' + item.ThoiGianDi + '</td>';
+
                         html += '<td>' + item.TongTien + '</td>';
+
                         var ngayDat = new Date(item.NgayDat);
-                        var hienTai = new Date();
-                        if (ngayDat.getTime() < hienTai.getTime()) {
+                        var ngayHienTai = new Date();
+                        var ngayHuy = new Date(item.ThoiGianHuyVe);
+                        var ngayBay = new Date(item.ThoiGianDi);
+
+                        if (ngayHuy.getTime() > ngayBay.getTime() || ngayBay.getDate() < ngayHienTai.getDate()) {
                             html += '<td><a href="#" class="badge badge-danger" style="border:none"'
                                 + ' onclick="Caution(\'' + item.MaVe + '\')">Quá hạn duyệt</a></td>';
-                        } else {
+                        }
+                        else {
                             html += '<td><a href="#" class="badge badge-success" style="border:none"'
                                 + ' onclick="Accept(\'' + item.MaVe + '\')">Duyệt</a></td>';
                         }
@@ -149,9 +158,32 @@
         }
 
         function Caution(maVe) {
-            showInfo("Vé " + maVe + " đã quá hạn cho phép huỷ",
-                "Bạn hãy chọn vé khác để duyệt nhé"
-            );
+            //showInfo("Vé " + maVe + " đã quá hạn cho phép huỷ",
+            //    "Bạn hãy chọn vé khác để duyệt nhé"
+            //);
+            var veHuy = {
+                MaVe: maVe,
+            };
+
+            $.ajax({
+                url: "/VeHuy/OverdueBrowsing",
+            data: JSON.stringify(veHuy),
+            type: "POST",
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            success: function (result) {
+                if (result.log == "OK") {
+                    window.location.replace("@Request.Url.Scheme://@Request.Url.Host:@Request.Url.Port/Admin/VeHuy/Index");
+                } else {
+                    showInfo("Đã có lỗi xảy ra",
+                        "Bạn hãy thử load lại trang và duyệt lại vé nhé"
+                    );
+                }
+            },
+            error: function (errormessage) {
+                alert(errormessage.responseText);
+            }
+        });
         }
 
         //Tìm kiếm bằng mã chuyến bay

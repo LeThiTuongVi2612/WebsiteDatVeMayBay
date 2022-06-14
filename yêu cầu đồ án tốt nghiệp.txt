@@ -1,5 +1,5 @@
 loại hành lí -> done
-thuật toán bán vé theo lễ, theo ngày mua,
-thanh toán momo ->done, thanh toán thẻ ngân hàng
+thuật toán bán vé theo lễ, theo ngày mua -> done
+thanh toán momo ->done, thanh toán thẻ ngân hàng->done
 gửi mail thông báo->done
-hủy vé
+hủy vé -> done

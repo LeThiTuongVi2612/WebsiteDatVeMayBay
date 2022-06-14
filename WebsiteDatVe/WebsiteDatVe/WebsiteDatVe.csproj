@@ -165,10 +165,13 @@
     <Compile Include="Models\KhachHang.cs" />
     <Compile Include="Models\MayBay.cs" />
     <Compile Include="Models\NguoiDatVe.cs" />
+    <Compile Include="Models\PayCompare.cs" />
+    <Compile Include="Models\PayLib.cs" />
     <Compile Include="Models\SanBay.cs" />
     <Compile Include="Models\sysdiagram.cs" />
     <Compile Include="Models\TaiKhoan.cs" />
     <Compile Include="Models\ThongTinDatVe.cs" />
+    <Compile Include="Models\Util.cs" />
     <Compile Include="Models\Ve.cs" />
     <Compile Include="Models\VeDaLuu.cs" />
     <Compile Include="MoMoSecurity.cs" />
@@ -1814,7 +1817,7 @@
     <Content Include="Views\Booking\Ticket.cshtml" />
     <Content Include="Views\Booking\returnUrl.cshtml" />
     <Content Include="Views\Home\Search2Way.cshtml" />
-    <Content Include="Views\User\ForgetPass.cshtml" />
+    <Content Include="Views\Booking\PaymentConfirm.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -251,8 +251,8 @@ namespace WebsiteDatVe.Controllers
         //gửi mail quên mật khẩu
         public void SendEmail(string address, string subject, string message)
         {
-            string email = "websitebanve@gmail.com";
-            string password = "Tuongvi261200";
+            string email = "";
+            string password = "";
 
             var loginInfo = new NetworkCredential(email, password);
             var msg = new System.Net.Mail.MailMessage();

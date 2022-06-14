@@ -34,6 +34,8 @@ namespace WebsiteDatVe.Models
 
         public DateTime? NgayDat { get; set; }
 
+        public DateTime? NgayHuyVe { get; set; }
+
         public double? TongTien { get; set; }
 
         public virtual ChuyenBay ChuyenBay { get; set; }

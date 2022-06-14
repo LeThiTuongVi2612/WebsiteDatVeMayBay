@@ -155,7 +155,7 @@
                         let ticket = `<div class="ticket">
                     <div class="ticket-content">
                         <div class="left">
-                            <img src="`+ v.HangBay + `" />
+                            <img src="/Assets/`+ v.HangBay + `" />
                         </div>
                         <div class="center">
                             <div class="center-item">
@@ -197,7 +197,7 @@
                     let ticket = `<div class="ticket">
                     <div class="ticket-content">
                         <div class="left">
-                            <img src="`+ v.HangBay + `" />
+                            <img src="/Assets/`+ v.HangBay + `" />
                         </div>
                         <div class="center">
                             <div class="center-item">
@@ -239,7 +239,7 @@
                         $('#frmChieuDi').empty();
                         var chuyenbay = data.chuyenbay;
                         let item = `<div class="head">
-                                <img src="`+ chuyenbay.HangBay + `">
+                                <img src="/Assets/`+ chuyenbay.HangBay + `">
                                 <p>Chi tiết</p>
                             </div>
                             <div class="center">
@@ -265,7 +265,7 @@
                         $('#totalcost').html(tongtien.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,") + " VND/khách");
 
                         //Gán cho modal
-                        $('#imglogo1').attr('src', chuyenbay.HangBay);
+                        $('#imglogo1').attr('src', '/Assets/'+ chuyenbay.HangBay);
                         $('#txtGioDi1').html(chuyenbay.ThoiGianDi);
                         $('#txtGioDen1').html(chuyenbay.ThoiGianDen);
                         $('#txtTongTG1').html(chuyenbay.TongThoiGian);
@@ -282,7 +282,7 @@
 
             $.ajax({
                 type: 'get',
-                url: '/Home/GetChuyenBay',
+                url: '/Home/GetChuyenBayKhuHoi',
                 data: {
                     machuyenbay: this.id
                 },
@@ -290,7 +290,7 @@
                     $('#frmChieuVe').empty();
                     var chuyenbay = data.chuyenbay;
                     let item = `<div class="head">
-                                <img src="`+ chuyenbay.HangBay +`">
+                                <img src="/Assets/`+ chuyenbay.HangBay +`">
                                 <p>Chi tiết</p>
                             </div>
                             <div class="center">
@@ -314,7 +314,7 @@
 
 
                     //Gán cho modal
-                    $('#imglogo2').attr('src', chuyenbay.HangBay);
+                    $('#imglogo2').attr('src', '/Assets/' +  chuyenbay.HangBay);
                     $('#txtGioDi2').html(chuyenbay.ThoiGianDi);
                     $('#txtGioDen2').html(chuyenbay.ThoiGianDen);
                     $('#txtTongTG2').html(chuyenbay.TongThoiGian);
@@ -344,7 +344,7 @@
                 let ticket = `<div class="ticket">
                     <div class="ticket-content">
                         <div class="left">
-                            <img src="`+ v.HangBay + `" />
+                            <img src="/Assets/`+ v.HangBay + `" />
                         </div>
                         <div class="center">
                             <div class="center-item">

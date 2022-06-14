@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -80,13 +81,15 @@ namespace WebsiteDatVe.Controllers
 
             Session["TongTien1"] = TinhGiaVe(giave);
 
-            //if (giaveKhuHoi == 0)
-            //{
-            //    Session["TongTien2"] = 0;
-            //}
-            //else
-            //{
+            if(idKhuHoi == null)
+            {
+                Session["TongTien2"] = giaveKhuHoi;
+            }
+            else
+            {
+
                 Session["TongTien2"] = TinhGiaVe(giaveKhuHoi);
+            }
 
             
 
@@ -153,9 +156,6 @@ namespace WebsiteDatVe.Controllers
             db.Ves.Add(ve);
             db.SaveChanges();
 
-            //Tạo sesion 
-            //Session["TongTien"] = tongtien;
-            //Session["MaVe"] = ve.MaVe;
 
             //Thêm khách hàng
             foreach (var item in listCus)
@@ -183,7 +183,7 @@ namespace WebsiteDatVe.Controllers
             db.NguoiDatVes.Add(nguoiDatVe);
             db.SaveChanges();
 
-
+            Session["NguoiDatVe"] = nguoiDatVe;
             return ve;
         }
 
@@ -286,6 +286,13 @@ namespace WebsiteDatVe.Controllers
             return Redirect(jmessage.GetValue("payUrl").ToString());
         }
 
+        public string DisplayMail(string mave)
+        {
+            var nguoidatve = db.NguoiDatVes.SingleOrDefault(n => n.MaVe == mave);
+            string email = nguoidatve.Email;
+            return email;
+        }
+
         public ActionResult  returnUrl()
         {
             string param = Request.QueryString.ToString().Substring(0, Request.QueryString.ToString().IndexOf("signature") - 1);
@@ -296,19 +303,22 @@ namespace WebsiteDatVe.Controllers
 
             if (Request.QueryString["message"].Equals("Successful."))
             {
-                ViewBag.Message = "Đặt vé thành công! Vui lòng vào lịch sử đặt vé để kiểm tra";
-               
+                
                 //Thay đổi trạng thái vé
                 Ve ve1 = (from v in db.Ves where v.MaVe == mave1 select v).FirstOrDefault();
                 ve1.TinhTrang = "Paid";
                 db.SaveChanges();
-
+                ViewBag.Message = "Đặt vé thành công! Vui lòng vào lịch sử đặt vé để kiểm tra";
+                string content = "<p>Tiêu đề:Xác nhận mua vé thành công </p>"+ ve1.MaVe ;
+                SendEmail(DisplayMail(mave1), "Xác nhận mua vé thành công", content);
                 if (Session["MaVe2"] != null)
                 {
                     string mave2 = Session["MaVe2"].ToString();
                     Ve ve2 = (from v in db.Ves where v.MaVe == mave2 select v).FirstOrDefault();
                     ve2.TinhTrang = "Paid";
-                    db.SaveChanges();
+                    db.SaveChanges(); 
+                    content = "<p>Tiêu đề:Xác nhận mua vé khứ hồi thành công </p>" + ve2.MaVe;
+                    SendEmail(DisplayMail(mave1), "Xác nhận mua vé thành công", content);
                 }
             }
             else
@@ -318,12 +328,16 @@ namespace WebsiteDatVe.Controllers
                 Ve ve1 = (from v in db.Ves where v.MaVe == mave1 select v).FirstOrDefault();
                 ve1.TinhTrang = "Canceled";
                 db.SaveChanges();
+                string content = "<p>Tiêu đề:Xác nhận mua vé thất bại </p>" + ve1.MaVe;
+                SendEmail(DisplayMail(mave1), "Xác nhận mua vé thất bại", content);
                 if (Session["MaVe2"] != null)
                 {
                     string mave2 = Session["MaVe2"].ToString();
                     Ve ve2 = (from v in db.Ves where v.MaVe == mave2 select v).FirstOrDefault();
                     ve2.TinhTrang = "Canceled";
                     db.SaveChanges();
+                    content = "<p>Tiêu đề:Xác nhận mua vé khứ hồi thất bại </p>" + ve2.MaVe;
+                    SendEmail(DisplayMail(mave1), "Xác nhận mua vé thất bại", content);
                 }
                 return View();
 
@@ -361,6 +375,7 @@ namespace WebsiteDatVe.Controllers
             try
             {
                 Ve ve = (from v in db.Ves where v.MaVe == mave select v).SingleOrDefault();
+                ve.NgayHuyVe = DateTime.Now;
                 ve.TinhTrang = "request";
                 db.SaveChanges();
 
@@ -370,6 +385,114 @@ namespace WebsiteDatVe.Controllers
             {
                 return Json(new { code = 500 }, JsonRequestBehavior.AllowGet);
             }
+        }
+
+        public void SendEmail(string address, string subject, string message)
+        {
+            string email = "";
+            string password = "";
+
+            var loginInfo = new NetworkCredential(email, password);
+            var msg = new System.Net.Mail.MailMessage();
+            var smtpClient = new SmtpClient("smtp.gmail.com", 587);
+
+            msg.From = new MailAddress(email);
+            msg.To.Add(new MailAddress(address));
+            msg.Subject = subject;
+            msg.Body = message;
+            msg.IsBodyHtml = true;
+
+            smtpClient.EnableSsl = true;
+            smtpClient.UseDefaultCredentials = false;
+            smtpClient.Credentials = loginInfo;
+            smtpClient.Send(msg);
+        }
+
+
+        //thanh toán VNPay
+        public ActionResult Payment()
+        {
+            double tongtien = (double)Session["TongTien1"] + (double)Session["TongTien2"];
+
+            string url = ConfigurationManager.AppSettings["Url"];
+            string returnUrl = ConfigurationManager.AppSettings["ReturnUrl"];
+            string tmnCode = ConfigurationManager.AppSettings["TmnCode"];
+            string hashSecret = ConfigurationManager.AppSettings["HashSecret"];
+
+            PayLib pay = new PayLib();
+
+            pay.AddRequestData("vnp_Version", "2.0.0"); //Phiên bản api mà merchant kết nối. Phiên bản hiện tại là 2.0.0
+            pay.AddRequestData("vnp_Command", "pay"); //Mã API sử dụng, mã cho giao dịch thanh toán là 'pay'
+            pay.AddRequestData("vnp_TmnCode", tmnCode); //Mã website của merchant trên hệ thống của VNPAY (khi đăng ký tài khoản sẽ có trong mail VNPAY gửi về)
+            pay.AddRequestData("vnp_Amount", tongtien*100 + ""); //số tiền cần thanh toán, công thức: số tiền * 100 - ví dụ 10.000 (mười nghìn đồng) --> 1000000
+            pay.AddRequestData("vnp_BankCode", ""); //Mã Ngân hàng thanh toán (tham khảo: https://sandbox.vnpayment.vn/apis/danh-sach-ngan-hang/), có thể để trống, người dùng có thể chọn trên cổng thanh toán VNPAY
+            pay.AddRequestData("vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss")); //ngày thanh toán theo định dạng yyyyMMddHHmmss
+            pay.AddRequestData("vnp_CurrCode", "VND"); //Đơn vị tiền tệ sử dụng thanh toán. Hiện tại chỉ hỗ trợ VND
+            pay.AddRequestData("vnp_IpAddr", Util.GetIpAddress()); //Địa chỉ IP của khách hàng thực hiện giao dịch
+            pay.AddRequestData("vnp_Locale", "vn"); //Ngôn ngữ giao diện hiển thị - Tiếng Việt (vn), Tiếng Anh (en)
+            pay.AddRequestData("vnp_OrderInfo", "THANH TOÁN VÉ MÁY BAY"); //Thông tin mô tả nội dung thanh toán
+            pay.AddRequestData("vnp_OrderType", "other"); //topup: Nạp tiền điện thoại - billpayment: Thanh toán hóa đơn - fashion: Thời trang - other: Thanh toán trực tuyến
+            pay.AddRequestData("vnp_ReturnUrl", returnUrl); //URL thông báo kết quả giao dịch khi Khách hàng kết thúc thanh toán
+            pay.AddRequestData("vnp_TxnRef", DateTime.Now.Ticks.ToString()); //mã hóa đơn
+
+            string paymentUrl = pay.CreateRequestUrl(url, hashSecret);
+
+            return Redirect(paymentUrl);
+        }
+
+        public ActionResult PaymentConfirm()
+        {
+            if (Request.QueryString.Count > 0)
+            {
+                string hashSecret = ConfigurationManager.AppSettings["HashSecret"]; //Chuỗi bí mật
+                var vnpayData = Request.QueryString;
+                PayLib pay = new PayLib();
+
+                //lấy toàn bộ dữ liệu được trả về
+                foreach (string s in vnpayData)
+                {
+                    if (!string.IsNullOrEmpty(s) && s.StartsWith("vnp_"))
+                    {
+                        pay.AddResponseData(s, vnpayData[s]);
+                    }
+                }
+
+                long orderId = Convert.ToInt64(pay.GetResponseData("vnp_TxnRef")); //mã hóa đơn
+                long vnpayTranId = Convert.ToInt64(pay.GetResponseData("vnp_TransactionNo")); //mã giao dịch tại hệ thống VNPAY
+                string vnp_ResponseCode = pay.GetResponseData("vnp_ResponseCode"); //response code: 00 - thành công, khác 00 - xem thêm https://sandbox.vnpayment.vn/apis/docs/bang-ma-loi/
+                string vnp_SecureHash = Request.QueryString["vnp_SecureHash"]; //hash của dữ liệu trả về
+
+                bool checkSignature = pay.ValidateSignature(vnp_SecureHash, hashSecret); //check chữ ký đúng hay không?
+
+                if (checkSignature)
+                {
+                    if (vnp_ResponseCode == "00")
+                    {
+                        NguoiDatVe nguoiDatVe = (NguoiDatVe)Session["NguoiDatVe"];
+                        string email = nguoiDatVe.Email;
+                        string content = "<p>Tiêu đề:Xác nhận mua vé thành công </p>" + nguoiDatVe.MaVe;
+                        SendEmail(email, "Xác nhận mua vé thành công", content);
+                        //Thanh toán thành công
+                        ViewBag.Message = "Thanh toán thành công hóa đơn " + orderId + " | Mã giao dịch: " + vnpayTranId;
+
+                    }
+                    else
+                    {
+                        NguoiDatVe nguoiDatVe = (NguoiDatVe)Session["NguoiDatVe"];
+                        string email = nguoiDatVe.Email;
+                        string content = "<p>Tiêu đề:Xác nhận mua vé thất bại </p>" + nguoiDatVe.MaVe;
+                        SendEmail(email, "Xác nhận mua vé thất bại", content);
+                        //Thanh toán không thành công. Mã lỗi: vnp_ResponseCode
+                        ViewBag.Message = "Có lỗi xảy ra trong quá trình xử lý hóa đơn " + orderId + " | Mã giao dịch: " + vnpayTranId + " | Mã lỗi: " + vnp_ResponseCode;
+                    }
+                }
+                else
+                {
+                    ViewBag.Message = "Có lỗi xảy ra trong quá trình xử lý";
+                }
+            }
+
+            return View();
         }
 
     }

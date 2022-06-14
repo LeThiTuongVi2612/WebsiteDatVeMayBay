@@ -113,7 +113,7 @@ namespace WebsiteDatVe.Areas.Admin.Controllers
             }
             catch { }
 
-            return "/Images/" + file.FileName;
+            return "Images/" + file.FileName;
 
         }
     }
